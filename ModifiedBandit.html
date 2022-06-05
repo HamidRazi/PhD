@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="C:/Users/HamidN7/Desktop/Java/jspsych-6.3.1/jspsych.js"></script>
+    <script src="C:/Users/HamidN7/Desktop/Java/jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="C:/Users/HamidN7/Desktop/Java/js/bandit.js"></script>
+    <script src="C:/Users/HamidN7/Desktop/Java/js/bandit-queues.js"></script>
+    <script src="C:/Users/HamidN7/Desktop/Java/js/bandit-stimuli.js"></script>
+    <script src="C:/Users/HamidN7/Desktop/Java/js/bandit-runsheet.js"></script>
+    <link href="C:/Users/HamidN7/Desktop/Java/jspsych-6.3.1/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+
+    <script src="C:/Users/HamidN7/Desktop/Java/jspsych-6.3.1/plugins/jspsych-fullscreen.js"></script>
+</head>
+<body>
+</body>
+<script>
+ 
+    //------------------------------------
+    // Messages and landing pages
+    //------------------------------------
+
+    // define welcome message
+    var welcome = {
+       
+        type: "html-keyboard-response",
+        stimulus: "Welcome to the information choice experiment. Press any key to begin."
+    };
+
+    // define block end message
+    var block_end = {
+        type: "html-keyboard-response",
+        stimulus: "End of block. Take a break. and press any key to continue when you are ready.",
+        on_finish: function(data){ // this is added here to re-randomise queues before the start of each new block
+            for (var i = 0; i < bugmush_queues.length; i++){
+                rbugmushq[i] = jsPsych.randomization.repeat(bugmush_queues[i], 1);
+                rinfosourceq[i] = jsPsych.randomization.repeat(infosource_queues[i], 1)
+            }
+            queues.rbugmushq = rbugmushq;
+            queues.rinfosourceq = rinfosourceq;
+            queues.null_trial_queue = [];
+            counter.block += 1;
+            counter.trial = 1;
+        }
+    };
+   
+    // define experiment end message
+    var expt_end = {
+        type: "html-keyboard-response",
+        stimulus: "End of experiment. Press any key to quit."
+    };
+
+    //------------------------------------
+    // Functions to turn fullscreen on/off
+    //------------------------------------
+
+    var fullscreen_on = {
+        type: "fullscreen",
+        fullscreen_mode: true,
+        message: '<p>In this experiment, a ladybug and a mushroom will appear in the center '
+           +'of the screen.</p><p> Each of them have either 1 point or zero and you can choose them by the left and right arrowkeys. </p>'
+         +' <p>The experiment will switch to full screen mode when you press the button below.</p><p>Where possible, please stay in full screen mode for the entire experiment.</p>'
+    };
+
+    var fullscreen_off = {
+        type: "fullscreen",
+        fullscreen_mode: false
+    };
+    
+ 
+    var rbugmushq = [[],[]];
+    var rinfosourceq = [[],[]];
+    var otherq=[[],[]];
+
+    for (var i = 0; i < bugmush_queues.length; i++){
+        rbugmushq[i] = jsPsych.randomization.repeat(bugmush_queues[i], 1);
+        rinfosourceq[i] = jsPsych.randomization.repeat(infosource_queues[i], 1);
+        
+    }
+    for (var i = 0; i < other_queues.length; i++){
+        otherq[i] = jsPsych.randomization.repeat(other_queues[i], 1);
+    }
+    // specify queues
+    var queues = {};
+   
+    queues.rbugmushq = rbugmushq;
+    queues.rinfosourceq = rinfosourceq;
+    queues.otherq = otherq;
+    queues.null_trial_queue = [];
+  
+ 
+
+    
+    // randomise allocation of image numbers to payout numbers
+    var bugmush_image_allocation = jsPsych.randomization.sampleWithoutReplacement([...Array(bugmush_images.length).keys()], queues.rbugmushq.length);
+    var infosource_image_allocation = jsPsych.randomization.sampleWithoutReplacement([...Array(infosource_images.length).keys()], queues.rinfosourceq.length);
+   
+
+    var other_image_allocation = jsPsych.randomization.sampleWithoutReplacement([...Array(bugmush_images.length).keys()], queues.otherq.length);
+    // set up block and trial counters
+    var counter = {};
+    counter.block = 1;
+    counter.trial = 1;
+    counter.n_blocks = 1;
+   
+
+    var other_conditioning_block = {
+        timeline_variables: other_conditioning_stimuli,
+        randomize_order: true,
+        timeline:
+        [{
+            type: 'bandit',
+            bug_stimuli: bugmush_images,
+            info_stimuli: infosource_images,
+            feedback_images: feedback_images,
+            image_allocation: other_image_allocation,
+            n_trials: other_conditioning_stimuli.length,
+            choice_type: jsPsych.timelineVariable('choice_type'),
+            left_info_image_type: jsPsych.timelineVariable('left_info_image_type'),
+            left_info_image_number: jsPsych.timelineVariable('left_info_image_number'),
+            right_info_image_type: jsPsych.timelineVariable('right_info_image_type'),
+            right_info_image_number: jsPsych.timelineVariable('right_info_image_number'),
+            left_bug_image_type: jsPsych.timelineVariable('left_bug_image_type'),
+            left_bug_image_number: jsPsych.timelineVariable('left_bug_image_number'),                                                        
+            right_bug_image_type: jsPsych.timelineVariable('right_bug_image_type'),
+            right_bug_image_number: jsPsych.timelineVariable('right_bug_image_number'),
+            InfoAnswerNumber: jsPsych.timelineVariable('InfoAnswerNumber'),
+            numberq: jsPsych.timelineVariable('numberq')
+            
+        }],
+
+    };
+  
+    //------------------------------------
+    // Put it all in a timeline
+    //------------------------------------
+   
+    // Add variables to timeline in relevant order
+    var timeline = [
+      welcome
+      ,                      // landing page
+      fullscreen_on,                // turn fullscreen mode on
+      other_conditioning_block,      // run a learning block with face images
+      block_end//,                    // show block-end screen
+      //expt_end,                     // show experiment-end screen
+      //fullscreen_off                // turn fullscreen mode off
+
+    ];
+
+    //------------------------------------
+    // Set up and run the experiment
+    //------------------------------------
+    
+    jsPsych.init({
+        timeline: timeline,
+        show_preload_progress_bar: true,
+        preload_images: [face_images, place_images,bugmush_images,infosource_images, feedback_images],
+        on_finish: function() {
+
+            // add interactions to the data variable
+            var interaction_data = jsPsych.data.getInteractionData();
+            jsPsych.data.get().addToLast({interactions: interaction_data.json()});
+
+            // Display jsPsych data in viewport.
+            jsPsych.data.displayData();
+            
+        }
+    });
+
+</script>
+</html>
