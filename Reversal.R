@@ -32,7 +32,6 @@ session_simulate <- function(n_trials, nsims, beta) {
       Q = c(0,0)
       outcome = matrix(NA, n_trials, 2)
       dv1 = rep(NA,n_trials)
-      dv2 = rep(NA, n_trials)
       prob_choose_1 = rep(NA,n_trials)
       choose_1 = rep(NA,n_trials)
       for (t in 1:n_trials) {
