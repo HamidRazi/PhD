@@ -51,15 +51,24 @@ session_simulate <- function(n_trials, nsims, beta) {
         outcome[t,2] = as.numeric(runif(1)<=p2)
         PE1 <- outcome[t,1]-Q[1]
         PE2 <- outcome[t,2]-Q[2]
-        if(PE1>0){
+      if(PE1>0 & c1_for_each_trial[s,t] == 1){
           Q[1] <- Q[1] + positive_lr*PE1
-        }else if(PE1<0){
+          }else if (PE1<0 & c1_for_each_trial[s,t] == 0){
+            Q[1] <- Q[1] + positive_lr*PE1
+        }else if(PE1<0 & c1_for_each_trial[s,t] == 1){
+          Q[1] <- Q[1] + negative_lr*PE1
+        }else if (PE1>0 & c1_for_each_trial[s,t] == 0){
           Q[1] <- Q[1] + negative_lr*PE1
         }
-        if(PE2>0){
+        if(PE2>0 & c1_for_each_trial[s,t] == 0){
           Q[2] <- Q[2] + positive_lr*PE2
-        }else if(PE2<0){
+          }else if (PE2>0 & c1_for_each_trial[s,t] == 1){
+            Q[2] <- Q[2] + negative_lr*PE2
+          }
+        else if(PE2<0 & c1_for_each_trial[s,t] == 0){
           Q[2] <- Q[2] + negative_lr*PE2
+        }else if(PE2<0 & c1_for_each_trial[s,t] == 1){
+          Q[2] <- Q[2] + positive_lr*PE2
         }
         q1_for_each_trial[s,t] <- Q[1]
         q2_for_each_trial[s,t] <- Q[2]
